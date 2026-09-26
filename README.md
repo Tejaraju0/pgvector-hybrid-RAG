@@ -25,6 +25,7 @@ This repository implements the standard two-stage retrieval funnel used in enter
 
 ## Tech Stack
 
+```text
 - Language: Python 3.10+
 - Database: PostgreSQL 16 + pgvector
 - Embedding Model: sentence-transformers/all-MiniLM-L6-v2 (384-d)
@@ -32,11 +33,13 @@ This repository implements the standard two-stage retrieval funnel used in enter
 - Lexical Search: rank-bm25
 - LLM Engine: Gemini API (gemini-2.5-flash) via google-genai
 - API Framework: FastAPI, Uvicorn, Pydantic v2
+```
 
 ---
 
 ## Database Schema
 
+```text
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE document_chunks (
@@ -51,11 +54,13 @@ CREATE TABLE document_chunks (
 CREATE INDEX IF NOT EXISTS document_chunks_embedding_hnsw_idx 
 ON document_chunks USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
+```
 
 ---
 
 ## Project Structure
 
+```text
 .
 ├── app.py              # FastAPI application with complete two-stage pipeline & Gemini
 ├── pipeline.py         # End-to-end local test pipeline (ingest, retrieve, rerank)
@@ -64,11 +69,13 @@ WITH (m = 16, ef_construction = 64);
 ├── requirements.txt    # Pinned production dependencies
 ├── .gitignore          # Environment and model cache exclusions
 └── README.md           # Architecture documentation
+```
 
 ---
 
 ## Quick Start
 
+```text
 1. Run PostgreSQL with pgvector:
    docker run -d --name ai_engineer_pgvector -p 5432:5432 -e POSTGRES_USER=ai_user -e POSTGRES_PASSWORD=ai_password -e POSTGRES_DB=rag_engine pgvector/pgvector:pg16
 
@@ -81,3 +88,4 @@ WITH (m = 16, ef_construction = 64);
 
 4. Launch API server:
    uvicorn app:app --reload --port 8000
+```
