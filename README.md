@@ -23,6 +23,46 @@ This repository implements the standard two-stage retrieval funnel used in enter
 
 ---
 
+## System Architecture Diagram
+
+```mermaid
+flowchart TD
+    %% User Request
+    User([Client / User]) -->|POST /api/v1/query| API[FastAPI Endpoint: /api/v1/query]
+
+    subgraph Database["Database Layer (PostgreSQL)"]
+        DB[(pgvector + Document Chunks)]
+    end
+
+    subgraph RetrievalStage["Stage 1: Coarse Hybrid Retrieval"]
+        API -->|Fetch All Chunks| Fetch[fetch_all_db_chunks]
+        Fetch --> DB
+        
+        API -->|Query Vector| Dense[Dense Retrieval: Bi-Encoder]
+        Dense -->|Cos Distance Vector Query| DB
+        
+        API -->|Tokenized Query| Sparse[Sparse Retrieval: BM25]
+        Sparse -->|Lexical Match| Fetch
+        
+        Dense -->|Top 4 Dense Hits| RRF[RRF Fusion: Reciprocal Rank Fusion]
+        Sparse -->|Top 4 Sparse Hits| RRF
+    end
+
+    subgraph RerankStage["Stage 2: Precision Re-Ranking"]
+        RRF -->|Fused Candidates| CrossEncoder[Cross-Encoder: ms-marco-MiniLM-L-6-v2]
+        CrossEncoder -->|Re-rank & Select Top 1| BestMatch[Best Context Chunk]
+    end
+
+    subgraph LLMStage["Stage 3: Grounded Synthesis"]
+        BestMatch -->|Construct Prompt + Context| Gemini[Gemini-2.5-Flash Model]
+        Gemini -->|Enforce GroundedAnswer Schema| Pydantic[Pydantic Structured Output Validation]
+    end
+
+    Pydantic -->|Return Grounded Answer| API
+    API -->|JSON Response| User
+```
+---
+
 ## Tech Stack
 
 ```text
