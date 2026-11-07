@@ -1,6 +1,10 @@
 import psycopg
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://ai_user:ai_password@127.0.0.1:5432/rag_engine"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def init_database():
     with psycopg.connect(DATABASE_URL) as conn:
